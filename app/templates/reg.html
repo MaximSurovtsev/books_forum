@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block main%}
+	<h1 class="main-title">Регистрация</h1>
+	<form class='form' action='' method='POST'>
+		{{ form.hidden_tag() }}
+		{{ form.username(class_='input mb', placeholder='Юзернейм', required='required') }}
+		{{ form.email(class_='input mb', placeholder='E-mail', required='required') }}
+		{{ form.password(class_='input mb', placeholder='Пароль', required='required') }}
+		{{ form.repeat_password(class_='input mb', placeholder='Повторите Пароль', required='required') }}
+		{{ form.submit(class_='btn') }}
+	</form>
+{% endblock %}

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ru">
+	<head>
+		<meta charset="UTF-8">
+		<title>Книги</title>
+		<link href="{{ url_for('static', filename='css/app.css') }}" rel="stylesheet">
+		<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;800&display=swap" rel="stylesheet">
+	</head>
+	<body>
+		<div class="header-wrapper">
+			<header class="header">
+				<a href="{{ url_for('index') }}" class="logo">
+					лого
+				</a>
+				<nav class="header-nav">
+					<a class='header-link' href="{{ url_for('index') }}">Книги</a>
+					{% if current_user.is_authenticated and current_user.is_admin() %}
+					<a class='header-link' href="{{ url_for('admin') }}">Управление</a>
+					{% endif %}
+				</nav>
+				
+				<div class="header-user">
+					{% if current_user.is_authenticated %}
+					<a class='header-link' href="{{ url_for('user', user_id=current_user.id) }}">{{current_user.username}}</a>
+					<a class='header-link' href="{{ url_for('logout') }}">Выйти</a>
+					{% else %}
+					<a class='header-link' href="{{ url_for('login') }}">Вход</a>
+					<a class='header-link' href="{{ url_for('reg') }}">Регистрация</a>
+					{% endif %}
+				</div>
+			</header>
+		</div>
+		<main class="main">
+			{% block main %}{% endblock%}
+		</main>
+	</body>
+</html>

@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+{% block main%}
+	<div class="main-box">
+		<div class="book-page">
+			<div class="book" style='margin: 0;'>
+				<div class="book-img" style="background-image: url({{ url_for('static', filename='img/' + book.src) }})"></div>
+				<div class="book-title">{{book.title}}</div>
+				<div class="book-author">{{book.author}}</div>
+				<div class="book-rating">
+					<div data-id={{book.id}} class="add_book js-like-book">
+						<img src="{{ url_for('static', filename='img/black.png') }}" alt="" class="like">
+					</div>
+					<span class="rating js-rating-book">{{book.votes}}</span>
+				</div>
+			</div>
+			<div class="book-info">
+				<h1 class="book-info-title">{{book.title}}</h1>
+				<div class="book-info-author">{{book.author}}</div>
+				<div class="book-info-text">{{book.description}}</div>
+			</div>
+		</div>
+		<div class="answer-box">
+			{% for comment in comments %}
+				<div class="answer">
+					<div>
+						<p class="main-item-info">{{comment.content}}</p>
+						<div class="main-item-details comment-details">
+							<div data-id={{comment.id}} class="add_book js-like-comment">
+								<img src="{{ url_for('static', filename='img/black.png') }}" alt="" class="like">
+							</div>
+							<span class="rating js-rating-comment" style='width: 32px;'>{{comment.votes}}</span>
+							<a href="{{ url_for('user', user_id=comment.user_id) }}" class="main-item-author">{{comment.username}}</a>
+							<div class="main-item-date">{{comment.date}}</div>
+						</div>
+					</div>
+					{% if current_user.id == comment.user_id %}
+						<!-- <a href='{{ url_for("delete_comment", comment_id=comment.id) }}' class='delete-link'> -->
+					<div class='delete-link' data-id={{comment.id}}>
+						<img class='krestik' src="{{ url_for('static', filename='img/signs.png') }}" alt="">
+					</div>
+					{% endif %}
+				</div>
+			{% endfor %}
+		</div>
+
+		<div class="comment-wrapper">
+			<input type="text" class='input comment-input', placeholder='Комментарий...', required='required')>
+			<div class="send-btn-wrapper">
+				<input type='submit' class='send-btn' value=''>
+			</div>
+		</div>
+
+	</div>
+	<script>
+		
+		
+
+
+		function make_magic(item, url, like, rating, box,remove) {
+
+			like.addEventListener('click',function () {
+				let data = new FormData(),
+					id = like.getAttribute('data-id');
+
+				data.append('id', id);
+				const csrftoken = "{{ csrf_token() }}";
+						
+				fetch(url + id, {
+					method: 'POST',
+					headers: {
+							"X-CSRFToken": csrftoken
+						},
+				}).then(function(response) {
+					return response.json();
+				}).then(function (data) {
+					rating.textContent = data.votes;
+				});
+			});
+			const csrftoken = "{{ csrf_token() }}";
+			if (remove) {
+				remove.addEventListener('click', function() {
+					let data = new FormData(),
+					id = like.getAttribute('data-id');
+
+					data.append('id', id);
+
+					fetch('/delete_comment/' + id, {
+
+						headers: {
+							"X-CSRFToken": csrftoken
+						},
+						method: 'POST',
+					}).then(function(response) {
+						return response.json();
+					}).then(function (data) {
+						console.log('OK');
+					});
+
+					box.removeChild(item);
+				});
+			}
+		}
+		
+		function magic(url, item_class, like_class, rating_class, box_class) {
+			const items = [].slice.call(document.querySelectorAll(item_class));
+			
+
+			items.forEach(function(item, idx, arr) {
+				const like = item.querySelector(like_class);
+				const rating = item.querySelector(rating_class);
+				const remove = item.querySelector('.delete-link');
+				const box = document.querySelector(box_class);
+				make_magic(item, url, like, rating, box, remove);
+			});
+				
+		}
+
+		
+		magic('/like_book/', '.book', '.js-like-book', '.js-rating-book', '.book-box');
+		magic('/like_comment/', '.answer', '.js-like-comment', '.js-rating-comment', '.answer-box');
+
+		function make_comment(id, content, votes, userlink, username, date, comment_delete_link) {
+			const box = document.querySelector('.answer-box');
+			const comment = document.createElement('div');
+			comment.classList.add('answer');
+			const div = document.createElement('div');
+
+			comment.appendChild(div);
+
+
+			const p = document.createElement('p');
+			p.classList.add('main-item-info');
+			p.textContent = content;
+
+			div.appendChild(p);
+
+			const details = document.createElement('div');
+			details.classList.add('main-item-details');
+			details.classList.add('comment-details');
+
+			div.appendChild(details);
+
+			const like_comment = document.createElement('div');
+			like_comment.classList.add('add_book');
+			like_comment.classList.add('js-like-comment');
+			like_comment.setAttribute('data-id', id);
+
+			
+
+			const heart_comment = document.createElement('img');
+			heart_comment.classList.add('like');
+			heart_comment.setAttribute('src', 'http://127.0.0.1:5000/static/img/black.png');
+
+			like_comment.appendChild(heart_comment);
+			details.appendChild(like_comment);
+
+			const rating_comment = document.createElement('span');
+			rating_comment.classList.add('rating');
+			rating_comment.classList.add('js-rating-comment');
+			rating_comment.setAttribute('style', 'width: 32px;');
+			rating_comment.textContent = votes;
+
+			details.appendChild(rating_comment);
+
+			const link = document.createElement('a');
+			link.setAttribute('href', userlink);
+			link.classList.add('main-item-author');
+			link.textContent = username;
+
+			details.appendChild(link);
+
+			const comment_date = document.createElement('div');
+			comment_date.classList.add('main-item-date');
+			comment_date.textContent = date;
+
+			details.appendChild(comment_date);
+
+			const delete_link = document.createElement('div');
+			delete_link.setAttribute('data-id', id);
+			delete_link.classList.add('delete-link');
+
+			const delete_link_image = document.createElement('img');
+			delete_link_image.setAttribute('src', 'http://127.0.0.1:5000/static/img/signs.png');
+			delete_link_image.classList.add('krestik');
+
+			delete_link.appendChild(delete_link_image);
+			comment.appendChild(delete_link);
+
+			box.appendChild(comment);
+			make_magic(comment, '/like_comment/', like_comment, rating_comment, box, delete_link);
+		}	
+
+
+		// make_comment(1, '123', 2, '/user/1', 'max', '2020 18 May 19:10', '/delete_comment/1');
+		
+
+		const input = document.querySelector('.input');
+		const btn = document.querySelector('.send-btn');
+		const btn_wrapper = document.querySelector('.send-btn-wrapper');
+		btn.addEventListener('focus', function(e) {
+			btn_wrapper.style.boxShadow = '0 0 1px 1px dodgerblue';
+		});
+
+		btn.addEventListener('blur', function(e) {
+			btn_wrapper.style.boxShadow = '0 0 5px 2px rgba(0,0,0,0.15)';
+		});
+
+		btn.addEventListener('click', function(e) {
+			
+			if (!input.value) return;
+			const value = input.value;
+			input.value = '';
+
+			let data = new FormData();
+			data.append('comment', value);
+			btn_wrapper.style.boxShadow = '0 0 5px 2px rgba(0,0,0,0.15)';
+
+			const csrftoken = "{{ csrf_token() }}";
+			fetch("{{ url_for('book', book_id=book.id) }}", {
+				method: 'POST',
+				headers: {
+					"X-CSRFToken": csrftoken
+				},
+				body: data,
+
+			}).then(function(response) {
+				return response.json();
+			}).then(function (data) {
+				const {id, content, votes, userlink, username, date, comment_delete_link} = data;
+				make_comment(id, content, votes, userlink, username, date, comment_delete_link);
+
+			});
+		});
+
+
+	</script>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block main%}
+	<h1 class="main-title">Книжный рай</h1>
+	<div class="main-box">
+		<div class="book-box">
+			{% for book in books %}
+				<div  class="book book__link">
+					<a href="{{ url_for('book', book_id=book.id) }}" class="book-img book_hover" style="background-image: url({{ url_for('static', filename='img/' + book.src) }})"></a>
+					<a href="{{ url_for('book', book_id=book.id) }}" class="book-title">{{book.title}}</a>
+					<div class="book-author">{{book.author}}</div>
+					<div class="book-rating">
+						<div href="{{ url_for('like_book', book_id=book.id) }}" data-id={{book.id}} class="add_book">
+							<img src="{{ url_for('static', filename='img/black.png') }}" alt="" class="like">
+						</div>
+						<span class="rating">{{book.votes}}</span>
+					</div>
+				</div>
+			{% endfor %}
+		</div>
+	</div>
+	<script>
+		const btns = [].slice.call(document.querySelectorAll('.add_book'));
+		const votes = [].slice.call(document.querySelectorAll('.rating'));
+		btns.forEach(function(btn, idx, arr) {
+
+			btn.addEventListener('click',function () {
+				let data = new FormData();
+				let id = btn.getAttribute('data-id');
+				data.append('id', id);
+				const csrftoken = "{{ csrf_token() }}";
+						
+				fetch('/like_book/' + id, {
+					method: 'POST',
+					headers: {
+							"X-CSRFToken": csrftoken
+						},
+				}).then(function(response) {
+					return response.json();
+				}).then(function (data) {
+					votes[idx].textContent = data.votes;
+				});
+			});
+		});
+	</script>
+{% endblock %}

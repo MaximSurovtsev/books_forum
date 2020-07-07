@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block main%}
+	<h1 class="main-title">Войти</h1>
+	{% if error %}
+	<p class="error">Не могу найти такого пользователя :(</p>
+	{% endif %}
+	<form class='form' action='' method='POST'>
+		{{ form.hidden_tag() }}
+		{{ form.username(class_='input mb', placeholder='Юзернейм', required='required') }}
+		{{ form.password(class_='input mb', placeholder='Пароль', required='required') }}
+		{{ form.submit(class_='btn') }}
+	</form>
+{% endblock %}
